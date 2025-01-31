@@ -108,10 +108,39 @@ for line in `cat $SUBJECT_TXT`; do
 		wb_command -metric-math "(A+B)/2" ${MSM_OUT}/${sub}${sess1}${sess2}_${hem}.surfdist.ANATgrid.forwards_and_reverse.func.gii -var A ${forwards_out_name}surfdist.ANATgrid.func.gii -var B ${reverse_out_name}surfdist.ANATgrid.inverse.func.gii
 		# MAXCP
 		wb_command -metric-math "(A+B)/2" ${MSM_OUT}/${sub}${sess1}${sess2}_${hem}.surfdist.CPgrid.forwards_and_reverse.func.gii -var A ${forwards_out_name}surfdist.CPgrid.func.gii -var B ${reverse_out_name}surfdist.CPgrid.inverse.func.gii
-		
 	done # end hemisphere loop
-	
-done
+done # end subject-iteration loop
+
+# iterate over subjects + sessions a second time for grouping
+resolutions=( CPgrid ANATgrid )
+# get N of session+subject combinations
+N=`cat $SUBJECT_TXT | wc -l`
+for res in ${resolutions[@]}; do
+	for hem in ${hems[@]}; do
+		surf_list=()
+		mets_list=()
+		for line in `cat $SUBJECT_TXT`; do
+			# get columns of input file
+			sub=`echo $line | cut -d "," -f1`
+			sess1=`echo $line | cut -d "," -f2`
+			sess2=`echo $line | cut -d "," -f3`
+			
+			# locations
+			forwards_out_folder=${MSM_OUT}/${sub}${sess1}${sess2}
+			forwards_out_name=${forwards_out_folder}/${sub}${sess1}${sess2}_${hem}.
+			
+			# propagate lists
+			surf_list=( ${surf_list[@]} -surf ${forwards_out_name}anat.${res}.reg.surf.gii )
+			mets_list=( ${mets_list[@]} -metric ${MSM_OUT}/${sub}${sess1}${sess2}_${hem}.surfdist.${res}.forwards_and_reverse.func.gii
+		done # end subject-loop
+		
+		# aftter iterating over all the subjects for this resolution-hemisphere combination, generate averages
+		wb_command -surface-average ${MSM_OUT}/N${N}.${hem}.anat.${res}.reg.avg.surf.gii ${surf_list[@]}
+		wb_command -metric-merge ${MSM_OUT}/N${N}.${hem}.surfdist.${res}.forwards_and_reverse.stack.func.gii ${mets_list[@]}
+		wb_command -metric-reduce ${MSM_OUT}/N${N}.${hem}.surfdist.${res}.forwards_and_reverse.stack.func.gii MEAN ${MSM_OUT}/N${N}.${hem}.surfdist.${res}.forwards_and_reverse.avg.func.gii
+		
+	done # end hemisphere-loop
+done # end resolution-loop
 
 # exit with success if we made it this far
 exit 0
