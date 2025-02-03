@@ -131,7 +131,7 @@ for res in ${resolutions[@]}; do
 			
 			# propagate lists
 			surf_list=( ${surf_list[@]} -surf ${forwards_out_name}anat.${res}.reg.surf.gii )
-			mets_list=( ${mets_list[@]} -metric ${MSM_OUT}/${sub}${sess1}${sess2}_${hem}.surfdist.${res}.forwards_and_reverse.func.gii
+			mets_list=( ${mets_list[@]} -metric ${MSM_OUT}/${sub}${sess1}${sess2}_${hem}.surfdist.${res}.forwards_and_reverse.func.gii )
 		done # end subject-loop
 		
 		# aftter iterating over all the subjects for this resolution-hemisphere combination, generate averages
